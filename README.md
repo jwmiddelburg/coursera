@@ -1,56 +1,27 @@
-# Week 4 Submission
-This file describes how I structured the R program:
+# Week 3 Final Project Submission
+This file describes how I structured the run_analysis.R script. Please note that I followed the instructions directly as per the "Getting and Cleaning Data" course description on Cousera
 
-# 0. Load packages and set wd correctly
+## 0. Load packages and set wd correctly
+In this first step, I loaded the required packages and imported the data set. I am using the dplyr package, primarily. I have also added column names to all the data, using the col.names functions, because this will be useful in the next steps.
 
-# 1. Merges the training and the test sets to create one data set.
-# First, import the test set and training set
-setwd("~/OneDrive/Coursera/Data Science/Module 3/data/UCI HAR Dataset")
-Column_Names <- read.table("features.txt", col.names = c("n", "features"))
+## 1. Merges the training and the test sets to create one data set.
+In the first step, I have merged the following rows:
+1) Row bind of Test_Data and Training_Data
+2) Row bind of Test_Labels and Training_Labels
+3) Row bind of Test_Subject and Train_Subject
 
-setwd("~/OneDrive/Coursera/Data Science/Module 3/data/UCI HAR Dataset/train")
-Training_Data <- read.table("X_train.txt", col.names = Column_Names$features)
+I combined these three new dataframew togethers, using the column bind function, which results in the Complete_Merged data frame.
 
-setwd("~/OneDrive/Coursera/Data Science/Module 3/data/UCI HAR Dataset/test")
-Test_Data <- read.table("X_test.txt", col.names = Column_Names$features)
+## 2. Extracts only the measurements on the mean and standard deviation for each measurement.
+The second step is quite straightforward, using the select() function fromthe dplyr package. I select "subject", "code", and every column that mentions "mean" or "std".
 
-Combined_Data <- rbind(Test_Data, Training_Data)
+## 3. Uses descriptive activity names to name the activities in the data set
+Step 3 was exectued by subsetting the "code" column (the second column) and replacing these with the activity labels.
 
-# 2. Extracts only the measurements on the mean and standard deviation for each measurement.
-# We select only the columns that end with "mean" or "std"
+## 4. Appropriately labels the data set with descriptive variable names.
+For updating the column names and column labels, I have chosen to use the names() and gsub() functions because they are easy to follow and read.
 
-Mean_Std_Data <- select(Combined_Data, contains("mean"), contains("std"))
+## 5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
+For step five, I have used the summarize_all() function from the dyplr package and grouped the data by subject and activitiy.
 
-# 3. Uses descriptive activity names to name the activities in the data set
-# First we need to import the activities list
-setwd("~/OneDrive/Coursera/Data Science/Module 3/data/UCI HAR Dataset")
-Activity_Labels <- read.table("activity_labels.txt")
-
-setwd("~/OneDrive/Coursera/Data Science/Module 3/data/UCI HAR Dataset/train")
-Y_Training <- read.table("Y_train.txt", col.names = "activity")
-
-setwd("~/OneDrive/Coursera/Data Science/Module 3/data/UCI HAR Dataset/test")
-Y_Test <- read.table("Y_test.txt", col.names = "activity")
-
-Y_Complete <- rbind(Y_Training, Y_Test)
-Y_Complete$activity <- factor(Y_Complete$activity)
-
-# Add the activity column to the data set
-Combined_Data$Activity <- Y_Complete
-
-# 4. Appropriately labels the data set with descriptive variable names.
-names(Combined_Data)[562] <- "activity"
-names(Combined_Data) <- gsub("^t", "Time", names(Combined_Data))
-names(Combined_Data) <- gsub("Acc", " Accelerator", names(Combined_Data))
-names(Combined_Data) <- gsub(".mean", " Mean", names(Combined_Data))
-names(Combined_Data) <- gsub(".std", " STD", names(Combined_Data))
-names(Combined_Data) <- gsub(".mad", " STD", names(Combined_Data))
-
-# 5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
-
-Grouped_Data <- Combined_Data %>% summarise_all(mean)
-
-#Export Table
-setwd("~/OneDrive/Coursera/Data Science/Module 3/data")
-write.table(Combined_Data, "Coursera_Week5.txt", row.names = FALSE)
-        
+Final step was to write the table into a new text file.
