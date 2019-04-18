@@ -1,55 +1,51 @@
-# 0. Load packages and set wd correctly
+# 0. Load packages, setwd correctly and import the tables
 setwd("~/OneDrive/Coursera/Data Science/Module 3/data/UCI HAR Dataset")
 library(dplyr)
 
+Activity_Labels <- read.table("activity_labels.txt", col.names = c("code", "activity"))
+Features <- read.table("features.txt", col.names = c("n","features"))
+
+Test_Data <- read.table("./test/X_test.txt", col.names = Features$features)
+Test_Labels <- read.table("./test/y_test.txt", col.names = "code")
+Test_Subject <- read.table("./test/subject_test.txt", col.names = "subject")
+
+Train_Data <- read.table("./train/X_train.txt", col.names = Features$features)
+Train_Labels <- read.table("./train/y_train.txt", col.names = "code")
+Train_Subject <- read.table("./train/subject_train.txt", col.names = "subject")
+
 # 1. Merges the training and the test sets to create one data set.
-# First, import the test set and training set
-setwd("~/OneDrive/Coursera/Data Science/Module 3/data/UCI HAR Dataset")
-Column_Names <- read.table("features.txt", col.names = c("n", "features"))
 
-setwd("~/OneDrive/Coursera/Data Science/Module 3/data/UCI HAR Dataset/train")
-Training_Data <- read.table("X_train.txt", col.names = Column_Names$features)
+Data_Merged <- rbind(Test_Data, Train_Data)
+Labels_Merged <- rbind(Test_Labels, Train_Labels)
+Subject_Merged <- rbind(Test_Subject, Train_Subject)
 
-setwd("~/OneDrive/Coursera/Data Science/Module 3/data/UCI HAR Dataset/test")
-Test_Data <- read.table("X_test.txt", col.names = Column_Names$features)
-
-Combined_Data <- rbind(Test_Data, Training_Data)
+Complete_Merged <- cbind(Subject_Merged, Data_Merged, Labels_Merged)
 
 # 2. Extracts only the measurements on the mean and standard deviation for each measurement.
 # We select only the columns that end with "mean" or "std"
 
-Mean_Std_Data <- select(Combined_Data, contains("mean"), contains("std"))
+Mean_Std_Data <- select(Complete_Merged, subject, code, contains("mean"), contains("std"))
 
 # 3. Uses descriptive activity names to name the activities in the data set
-# First we need to import the activities list
-setwd("~/OneDrive/Coursera/Data Science/Module 3/data/UCI HAR Dataset")
-Activity_Labels <- read.table("activity_labels.txt")
+# Here, we simpley subset the 'code' by the Activity Labels
 
-setwd("~/OneDrive/Coursera/Data Science/Module 3/data/UCI HAR Dataset/train")
-Y_Training <- read.table("Y_train.txt", col.names = "activity")
-
-setwd("~/OneDrive/Coursera/Data Science/Module 3/data/UCI HAR Dataset/test")
-Y_Test <- read.table("Y_test.txt", col.names = "activity")
-
-Y_Complete <- rbind(Y_Training, Y_Test)
-Y_Complete$activity <- factor(Y_Complete$activity)
-
-# Add the activity column to the data set
-Combined_Data$Activity <- Y_Complete
+Mean_Std_Data$code <- Activity_Labels[Mean_Std_Data$code, 2]
 
 # 4. Appropriately labels the data set with descriptive variable names.
-names(Combined_Data)[562] <- "activity"
-names(Combined_Data) <- gsub("^t", "Time", names(Combined_Data))
-names(Combined_Data) <- gsub("Acc", " Accelerator", names(Combined_Data))
-names(Combined_Data) <- gsub(".mean", " Mean", names(Combined_Data))
-names(Combined_Data) <- gsub(".std", " STD", names(Combined_Data))
-names(Combined_Data) <- gsub(".mad", " STD", names(Combined_Data))
+names(Mean_Std_Data)[2] <- "activity"
+names(Mean_Std_Data) <- gsub("^t", "Time", names(Mean_Std_Data))
+names(Mean_Std_Data)<- gsub("Acc", " Accelerator", names(Mean_Std_Data))
+names(Mean_Std_Data) <- gsub(".mean", " Mean", names(Mean_Std_Data))
+names(Mean_Std_Data) <- gsub(".std", " STD", names(Mean_Std_Data))
+names(Mean_Std_Data) <- gsub(".mad", " STD", names(Mean_Std_Data))
 
 # 5. From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject.
 
-Grouped_Data <- Combined_Data %>% summarise_all(mean)
+Grouped_Data <- Mean_Std_Data %>% 
+        group_by(subject, activity) %>%
+        summarise_all(mean)
 
 #Export Table
 setwd("~/OneDrive/Coursera/Data Science/Module 3/data")
-write.table(Combined_Data, "Coursera_Week5.txt", row.names = FALSE)
+write.table(Grouped_Data, "Coursera_Week3_Final.txt", row.names = FALSE)
         
