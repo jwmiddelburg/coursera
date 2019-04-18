@@ -1,0 +1,7 @@
+Codebook for Final Project Getting and Cleaning Data
+
+Data for this project is available through:
+https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Dataset.zip
+
+I have used the following packages:
+1) dplyr package - dplyr provides a flexible grammar of data manipulation. It's the next iteration of plyr, focused on tools for working with data frames (hence the d in the name).
